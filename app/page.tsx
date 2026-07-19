@@ -40,78 +40,103 @@ export default function ComplaintFormPage() {
 
   return (
     <main className="page">
-      <h1>The Kingdom&apos;s Complaints Office</h1>
-      <p className="subtitle">File your grievance. A clerk will (eventually) attend to it.</p>
+      <header className="shop-header">
+        <p className="eyebrow">est. by royal decree, mostly ignored since</p>
+        <h1>The Kingdom&apos;s Complaints Office</h1>
+        <p className="tagline">File your grievance. A clerk will (eventually) attend to it.</p>
+      </header>
 
-      {status === 'sent' ? (
-        <div className="confirmation">
-          <p>Your complaint has been formally registered.</p>
-          <button onClick={() => setStatus('idle')}>File another complaint</button>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit}>
-          <label>
-            Your name
-            <input
-              type="text"
-              value={submitterName}
-              onChange={(e) => setSubmitterName(e.target.value)}
-              required
-            />
-          </label>
+      <div className="form-wrap">
+        {status === 'sent' ? (
+          <div className="confirmation">
+            <p>Your complaint has been formally registered.</p>
+            <button className="btn btn-primary" onClick={() => setStatus('idle')}>
+              File another complaint
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <label>
+              Your name
+              <input
+                type="text"
+                value={submitterName}
+                onChange={(e) => setSubmitterName(e.target.value)}
+                required
+              />
+            </label>
 
-          <label>
-            Your email (optional, for the confirmation scroll)
-            <input
-              type="email"
-              value={submitterEmail}
-              onChange={(e) => setSubmitterEmail(e.target.value)}
-            />
-          </label>
+            <label>
+              Your email (optional, for the confirmation scroll)
+              <input
+                type="email"
+                value={submitterEmail}
+                onChange={(e) => setSubmitterEmail(e.target.value)}
+              />
+            </label>
 
-          <label>
-            Complaint title
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-            />
-          </label>
+            <label>
+              Complaint title
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
+            </label>
 
-          <label>
-            Describe your grievance in full
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={5}
-              required
-            />
-          </label>
+            <label>
+              Describe your grievance in full
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={5}
+                required
+              />
+            </label>
 
-          <button type="submit" disabled={status === 'sending'}>
-            {status === 'sending' ? 'Submitting to the Court...' : 'Submit Complaint'}
-          </button>
+            <button type="submit" className="btn btn-primary" disabled={status === 'sending'}>
+              {status === 'sending' ? 'Submitting to the Court...' : 'Submit Complaint'}
+            </button>
 
-          {status === 'error' && (
-            <p className="error">Something went wrong. The Court apologizes.</p>
-          )}
-        </form>
-      )}
+            {status === 'error' && (
+              <p className="error">Something went wrong. The Court apologizes.</p>
+            )}
+          </form>
+        )}
+      </div>
 
       <style jsx>{`
         .page {
-          max-width: 640px;
+          min-height: 100vh;
+        }
+        .shop-header {
+          text-align: center;
+          padding: 1.75rem 1.5rem 1rem;
+          border-bottom: 1px solid var(--border);
+        }
+        .eyebrow {
+          font-size: 0.75rem;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          color: var(--text-muted);
+          margin: 0 0 0.75rem;
+        }
+        .shop-header h1 {
+          font-family: var(--font-display);
+          font-size: clamp(1.75rem, 4vw, 2.75rem);
+          margin: 0 0 0.5rem;
+          color: var(--accent);
+        }
+        .tagline {
+          color: var(--text-muted);
+          margin: 0;
+          font-size: 0.95rem;
+        }
+        .form-wrap {
+          max-width: 560px;
           margin: 0 auto;
-          padding: 3rem 1.5rem;
-          font-family: Georgia, serif;
-        }
-        h1 {
-          margin-bottom: 0.25rem;
-        }
-        .subtitle {
-          color: #666;
-          margin-bottom: 2rem;
+          padding: 2.5rem 1.5rem 4rem;
         }
         form {
           display: flex;
@@ -121,36 +146,59 @@ export default function ComplaintFormPage() {
         label {
           display: flex;
           flex-direction: column;
-          gap: 0.35rem;
-          font-weight: 600;
+          gap: 0.4rem;
+          font-size: 0.85rem;
+          color: var(--text-muted);
         }
         input,
         textarea {
-          font-family: inherit;
-          font-size: 1rem;
-          padding: 0.6rem;
-          border: 1px solid #ccc;
-          border-radius: 4px;
+          font-family: var(--font-mono);
+          font-size: 0.95rem;
+          padding: 0.65rem 0.75rem;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          color: var(--text);
         }
-        button {
-          padding: 0.75rem;
-          font-size: 1rem;
-          font-weight: 600;
-          border: none;
-          border-radius: 4px;
-          background: #6b3f1d;
-          color: white;
+        input:focus,
+        textarea:focus {
+          outline: none;
+          border-color: var(--border-accent);
+        }
+        .btn {
+          font-family: var(--font-mono);
+          font-size: 0.9rem;
+          padding: 0.75rem 1rem;
+          border-radius: 6px;
+          border: 1px solid var(--border);
           cursor: pointer;
+          background: transparent;
+          color: var(--text);
+          transition: transform 0.15s ease;
         }
-        button:disabled {
-          opacity: 0.6;
+        .btn:not(:disabled):hover {
+          transform: translateY(-1px);
+        }
+        .btn:disabled {
+          opacity: 0.35;
           cursor: not-allowed;
+        }
+        .btn-primary {
+          background: var(--accent);
+          color: #1b1420;
+          border-color: var(--accent);
+          font-weight: 600;
         }
         .confirmation {
           text-align: center;
+          color: var(--text-muted);
+        }
+        .confirmation p {
+          margin-bottom: 1.5rem;
         }
         .error {
-          color: #b00020;
+          color: var(--urgency-critical);
+          font-size: 0.85rem;
         }
       `}</style>
     </main>
