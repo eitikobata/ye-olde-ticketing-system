@@ -44,6 +44,7 @@ export default function ComplaintFormPage() {
         <p className="eyebrow">est. by royal decree, mostly ignored since</p>
         <h1>The Kingdom&apos;s Complaints Office</h1>
         <p className="tagline">File your grievance. A clerk will (eventually) attend to it.</p>
+        <a href="/dashboard" className="btn btn-secondary nav-link">View the Ledger →</a>
       </header>
 
       <div className="form-wrap">
@@ -196,6 +197,11 @@ export default function ComplaintFormPage() {
         .confirmation p {
           margin-bottom: 1.5rem;
         }
+        .nav-link {
+          display: inline-block;
+          margin-top: 0.75rem;
+          text-decoration: none;
+        }  
         .error {
           color: var(--urgency-critical);
           font-size: 0.85rem;

@@ -75,6 +75,7 @@ export default function DashboardPage() {
       <header className="shop-header">
         <p className="eyebrow">scrumban ledger</p>
         <h1>The Kingdom&apos;s Complaints Office</h1>
+        <a href="/" className="btn btn-secondary nav-link">← File a Complaint</a>
       </header>
 
       <div className="board-wrap">
@@ -212,6 +213,11 @@ export default function DashboardPage() {
           text-transform: uppercase;
           font-weight: 600;
         }
+        .nav-link {
+          display: inline-block;
+          margin-top: 0.75rem;
+          text-decoration: none;
+        }  
         .urgency-label--low { color: var(--urgency-low); }
         .urgency-label--medium { color: var(--urgency-medium); }
         .urgency-label--high { color: var(--urgency-high); }
