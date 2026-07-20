@@ -17,9 +17,19 @@ const URGENCY_SEAL: Record<TicketUrgency, string> = {
   critical: 'X',
 };
 
+const GUARD_LINES = [
+  "You have a problem this size 🤏... I have one THIS size 🙌",
+  "You speak as if I don't work. I had to explain myself to my HUSBAND last night.",
+  "Careful what you say in here. Everything can be... reinterpreted.",
+  "I tried to free you. Upper management said no.",
+  "WORTHLESS! ALL OF YOU! MOVE FASTER!",
+  "Back to work! The complaints don't file themselves!",
+];
+
 export default function DashboardPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lineIndex, setLineIndex] = useState(0);
 
   useEffect(() => {
     async function loadTickets() {
@@ -50,6 +60,13 @@ export default function DashboardPage() {
     };
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLineIndex((i) => (i + 1) % GUARD_LINES.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
   if (loading) {
     return (
       <main className="page">
@@ -72,11 +89,14 @@ export default function DashboardPage() {
 
   return (
     <main className="page">
-      <header className="shop-header">
-        <p className="eyebrow">scrumban ledger</p>
-        <h1>The Kingdom&apos;s Complaints Office</h1>
-        <a href="/" className="btn btn-secondary nav-link">← File a Complaint</a>
-      </header>
+      <div className="banner">
+        <img src="/images/dashboard-banner.png" alt="A prison warden shouting through a megaphone" className="banner-bg" />
+        <div className="speech-bubble">
+          <p>{GUARD_LINES[lineIndex]}</p>
+        </div>
+      </div>
+
+      <a href="/" className="btn btn-secondary nav-link">← File a Complaint</a>
 
       <div className="board-wrap">
         <div className="board">
@@ -112,33 +132,65 @@ export default function DashboardPage() {
         .page {
           min-height: 100vh;
         }
-        .shop-header {
-          text-align: center;
-          padding: 1.75rem 1.5rem 1rem;
-          border-bottom: 1px solid var(--border);
+        .banner {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 2.4 / 1;
+          max-height: 420px;
+          overflow: hidden;
         }
-        .eyebrow {
-          font-size: 0.75rem;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
-          color: var(--text-muted);
-          margin: 0 0 0.75rem;
+        .banner-bg {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          image-rendering: pixelated;
         }
-        .shop-header h1 {
-          font-family: var(--font-display);
-          font-size: clamp(1.75rem, 4vw, 2.75rem);
+        .speech-bubble {
+          position: absolute;
+          top: 8%;
+          left: 4%;
+          max-width: 42%;
+          background: rgba(18, 13, 22, 0.88);
+          border: 1px solid var(--border-accent);
+          border-radius: 10px;
+          padding: 0.75rem 1rem;
+          transition: opacity 0.3s ease;
+        }
+        .speech-bubble p {
           margin: 0;
-          color: var(--accent);
+          font-size: clamp(0.75rem, 1.5vw, 0.95rem);
+          line-height: 1.4;
+          color: var(--text);
+        }
+        .btn {
+          font-family: var(--font-mono);
+          font-size: 0.85rem;
+          padding: 0.55rem 1rem;
+          border-radius: 6px;
+          border: 1px solid var(--border);
+          cursor: pointer;
+          text-decoration: none;
+          display: inline-block;
+        }
+        .btn-secondary {
+          background: transparent;
+          color: var(--text);
+        }
+        .nav-link {
+          display: block;
+          text-align: center;
+          margin: 1rem auto;
+          width: fit-content;
         }
         .board-wrap {
-          max-width: 1100px;
+          width: 100%;
           margin: 0 auto;
-          padding: 2rem 1.5rem 4rem;
+          padding: 2rem 2vw 4rem;
         }
         .board {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 1.25rem;
+          gap: 1.5rem;
         }
         .column {
           background: var(--bg-card);
@@ -213,15 +265,16 @@ export default function DashboardPage() {
           text-transform: uppercase;
           font-weight: 600;
         }
-        .nav-link {
-          display: inline-block;
-          margin-top: 0.75rem;
-          text-decoration: none;
-        }  
         .urgency-label--low { color: var(--urgency-low); }
         .urgency-label--medium { color: var(--urgency-medium); }
         .urgency-label--high { color: var(--urgency-high); }
         .urgency-label--critical { color: var(--urgency-critical); }
+
+        @media (max-width: 800px) {
+          .board {
+            grid-template-columns: 1fr;
+          }
+        }
       `}</style>
     </main>
   );

@@ -40,12 +40,14 @@ export default function ComplaintFormPage() {
 
   return (
     <main className="page">
-      <header className="shop-header">
-        <p className="eyebrow">est. by royal decree, mostly ignored since</p>
-        <h1>The Kingdom&apos;s Complaints Office</h1>
-        <p className="tagline">File your grievance. A clerk will (eventually) attend to it.</p>
-        <a href="/dashboard" className="btn btn-secondary nav-link">View the Ledger →</a>
-      </header>
+      <div className="banner">
+        <img src="/images/form-banner.png" alt="A grand kingdom seen from a castle balcony" className="banner-bg" />
+        <div className="speech-bubble">
+          <p>Dear Peasan— I mean, dear kinsman! Welcome to the Kingdom&apos;s Complaints Office. Please, fill the small form below.</p>
+        </div>
+      </div>
+
+      <a href="/dashboard" className="btn btn-secondary nav-link">View the Ledger →</a>
 
       <div className="form-wrap">
         {status === 'sent' ? (
@@ -59,50 +61,24 @@ export default function ComplaintFormPage() {
           <form onSubmit={handleSubmit}>
             <label>
               Your name
-              <input
-                type="text"
-                value={submitterName}
-                onChange={(e) => setSubmitterName(e.target.value)}
-                required
-              />
+              <input type="text" value={submitterName} onChange={(e) => setSubmitterName(e.target.value)} required />
             </label>
-
             <label>
               Your email (optional, for the confirmation scroll)
-              <input
-                type="email"
-                value={submitterEmail}
-                onChange={(e) => setSubmitterEmail(e.target.value)}
-              />
+              <input type="email" value={submitterEmail} onChange={(e) => setSubmitterEmail(e.target.value)} />
             </label>
-
             <label>
               Complaint title
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
+              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
             </label>
-
             <label>
               Describe your grievance in full
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={5}
-                required
-              />
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={5} required />
             </label>
-
             <button type="submit" className="btn btn-primary" disabled={status === 'sending'}>
               {status === 'sending' ? 'Submitting to the Court...' : 'Submit Complaint'}
             </button>
-
-            {status === 'error' && (
-              <p className="error">Something went wrong. The Court apologizes.</p>
-            )}
+            {status === 'error' && <p className="error">Something went wrong. The Court apologizes.</p>}
           </form>
         )}
       </div>
@@ -111,28 +87,54 @@ export default function ComplaintFormPage() {
         .page {
           min-height: 100vh;
         }
-        .shop-header {
-          text-align: center;
-          padding: 1.75rem 1.5rem 1rem;
-          border-bottom: 1px solid var(--border);
+        .banner {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 2.4 / 1;
+          max-height: 420px;
+          overflow: hidden;
         }
-        .eyebrow {
-          font-size: 0.75rem;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
-          color: var(--text-muted);
-          margin: 0 0 0.75rem;
+        .banner-bg {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          image-rendering: pixelated;
         }
-        .shop-header h1 {
-          font-family: var(--font-display);
-          font-size: clamp(1.75rem, 4vw, 2.75rem);
-          margin: 0 0 0.5rem;
-          color: var(--accent);
+        .speech-bubble {
+          position: absolute;
+          top: 8%;
+          left: 4%;
+          max-width: 42%;
+          background: rgba(18, 13, 22, 0.88);
+          border: 1px solid var(--border-accent);
+          border-radius: 10px;
+          padding: 0.75rem 1rem;
         }
-        .tagline {
-          color: var(--text-muted);
+        .speech-bubble p {
           margin: 0;
-          font-size: 0.95rem;
+          font-size: clamp(0.75rem, 1.5vw, 0.95rem);
+          line-height: 1.4;
+          color: var(--text);
+        }
+        .btn {
+          font-family: var(--font-mono);
+          font-size: 0.85rem;
+          padding: 0.55rem 1rem;
+          border-radius: 6px;
+          border: 1px solid var(--border);
+          cursor: pointer;
+          text-decoration: none;
+          display: inline-block;
+        }
+        .btn-secondary {
+          background: transparent;
+          color: var(--text);
+        }
+        .nav-link {
+          display: block;
+          text-align: center;
+          margin: 1rem auto;
+          width: fit-content;
         }
         .form-wrap {
           max-width: 560px;
@@ -166,24 +168,6 @@ export default function ComplaintFormPage() {
           outline: none;
           border-color: var(--border-accent);
         }
-        .btn {
-          font-family: var(--font-mono);
-          font-size: 0.9rem;
-          padding: 0.75rem 1rem;
-          border-radius: 6px;
-          border: 1px solid var(--border);
-          cursor: pointer;
-          background: transparent;
-          color: var(--text);
-          transition: transform 0.15s ease;
-        }
-        .btn:not(:disabled):hover {
-          transform: translateY(-1px);
-        }
-        .btn:disabled {
-          opacity: 0.35;
-          cursor: not-allowed;
-        }
         .btn-primary {
           background: var(--accent);
           color: #1b1420;
@@ -197,11 +181,6 @@ export default function ComplaintFormPage() {
         .confirmation p {
           margin-bottom: 1.5rem;
         }
-        .nav-link {
-          display: inline-block;
-          margin-top: 0.75rem;
-          text-decoration: none;
-        }  
         .error {
           color: var(--urgency-critical);
           font-size: 0.85rem;
