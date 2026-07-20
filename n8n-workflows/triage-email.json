@@ -1,0 +1,390 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "correio-reclamacoes",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "d667b09d-dc0d-433b-9a4d-ebcc716abf21",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        -208
+      ],
+      "webhookId": "e24b1fed-0c3f-4bbe-948e-cbf3c4719a33"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c05ad169-62bb-4b7e-b070-452b46f92743",
+              "name": "title",
+              "type": "string",
+              "value": "={{ $json.body.title }}"
+            },
+            {
+              "id": "8841aec6-8794-490b-9345-31b614b9f1f0",
+              "name": "description",
+              "type": "string",
+              "value": "={{ $json.body.description }}"
+            },
+            {
+              "id": "798594c8-8636-463f-ae4e-d967ae7706a7",
+              "name": "submitter_name",
+              "type": "string",
+              "value": "={{ $json.body.submitter_name }}"
+            },
+            {
+              "id": "dc5c4cd8-6a23-436a-9439-a3fe4b6125c1",
+              "name": "submitter_email",
+              "type": "string",
+              "value": "={{ $json.body.submitter_email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5600d448-6867-4aff-84bd-4222063f4b45",
+      "name": "Normalize Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"systemInstruction\": {\"parts\": [{\"text\": \"You are a triage clerk at the Kingdom's Complaints Office. Classify each ticket's urgency using this exact rubric:\\n\\n- critical: immediate, ongoing danger to life or safety happening right now (something actively attacking, flooding, collapsing, or poisoning someone as we speak).\\n- high: a serious real-world risk that could cause harm or major damage soon if ignored, but nothing is actively happening this second (a structural crack, a dangerous creature nearby but not attacking yet).\\n- medium: a real inconvenience or disruption to daily life, annoying and disruptive, but nobody is at risk (property damage, ongoing nuisance, malfunctioning magic item).\\n- low: a trivial annoyance, petty complaint, or pure bureaucracy with no real-world consequence at all (paperwork typos, minor insults, aesthetic complaints).\\n\\nExamples:\\n\\\"The well water turned green and something is pushing against the cover, three families drink from it\\\" -> critical\\n\\\"A structural crack in the town bridge, carts are avoiding it but it hasn't collapsed yet\\\" -> high\\n\\\"A garden gnome keeps staring into my window, I can't sleep\\\" -> medium\\n\\\"My rooster sings a semitone flat\\\" -> low\\n\\nRead the ticket and classify strictly by real-world consequence, not by how dramatically it's written.\\n\\nRespond only with the JSON schema provided, nothing else.\"}]}, \"contents\": [{\"parts\": [{\"text\": \"={{ $json.title }}\\n\\n{{ $json.description }}\"}]}], \"generationConfig\": {\"responseMimeType\": \"application/json\", \"responseSchema\": {\"type\": \"OBJECT\", \"properties\": {\"urgency\": {\"type\": \"STRING\", \"enum\": [\"low\", \"medium\", \"high\", \"critical\"]}, \"category\": {\"type\": \"STRING\", \"enum\": [\"monster_invasion\", \"bureaucracy\", \"broken_item\", \"magic_malfunction\", \"other\"]}, \"reasoning\": {\"type\": \"STRING\"}}, \"required\": [\"urgency\", \"category\"]}}}",
+        "options": {}
+      },
+      "id": "72a29c90-2ee0-4b2c-a5c9-4eef000eb31a",
+      "name": "Gemini - Classify Ticket",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        -208
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "",
+          "name": "Gemini API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const original = $('Normalize Payload').first().json;\nconst geminiRaw = $input.first().json;\nconst text = geminiRaw.candidates[0].content.parts[0].text;\nconst parsed = JSON.parse(text);\n\nconst slaHoursByUrgency = { critical: 4, high: 24, medium: 72, low: 168 };\nconst fakeWaitYearsByUrgency = { critical: 350, high: 200, medium: 75, low: 12 };\n\nconst urgency = parsed.urgency;\nconst slaHours = slaHoursByUrgency[urgency] || 168;\nconst slaDeadline = new Date(Date.now() + slaHours * 60 * 60 * 1000).toISOString();\n\nreturn [{\n  json: {\n    title: original.title,\n    description: original.description,\n    submitter_name: original.submitter_name,\n    submitter_email: original.submitter_email,\n    urgency: parsed.urgency,\n    category: parsed.category,\n    reasoning: parsed.reasoning || '',\n    sla_deadline: slaDeadline,\n    fake_wait_years: fakeWaitYearsByUrgency[urgency] || 12\n  }\n}];"
+      },
+      "id": "46e9e906-2a12-4e4d-af3a-ea589426141b",
+      "name": "Parse & Compute SLA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "categories",
+        "limit": 1,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "condition": "eq",
+              "keyValue": "={{ $json.category }}"
+            }
+          ]
+        }
+      },
+      "id": "22819236-342b-4da5-9324-eb70204932e6",
+      "name": "Supabase - Get Category",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        -208
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6b2ae44c-fc2c-4aeb-a345-3852e60a344d",
+              "name": "title",
+              "type": "string",
+              "value": "={{ $('Parse & Compute SLA').first().json.title }}"
+            },
+            {
+              "id": "d8c13f7e-0c1e-4425-adde-ee5d93a3f512",
+              "name": "description",
+              "type": "string",
+              "value": "={{ $('Parse & Compute SLA').first().json.description }}"
+            },
+            {
+              "id": "22e2a285-1b06-4b46-b139-013e26e361c9",
+              "name": "submitter_name",
+              "type": "string",
+              "value": "={{ $('Parse & Compute SLA').first().json.submitter_name }}"
+            },
+            {
+              "id": "4b0d257c-6662-4cfe-a0d7-bcabe5bc4339",
+              "name": "submitter_email",
+              "type": "string",
+              "value": "={{ $('Parse & Compute SLA').first().json.submitter_email }}"
+            },
+            {
+              "id": "3b5c2cf7-4e60-40cb-add8-473cef0d7875",
+              "name": "urgency",
+              "type": "string",
+              "value": "={{ $('Parse & Compute SLA').first().json.urgency }}"
+            },
+            {
+              "id": "b8984370-68de-4cb0-a12c-1e7de5b3b47e",
+              "name": "category_id",
+              "type": "number",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "id": "2ea197d2-d84d-4ac9-b81d-deb1a4157e3d",
+              "name": "sla_deadline",
+              "type": "string",
+              "value": "={{ $('Parse & Compute SLA').first().json.sla_deadline }}"
+            },
+            {
+              "id": "a5272fda-8cf3-489c-a0e6-799b34edb31c",
+              "name": "fake_wait_years",
+              "type": "number",
+              "value": "={{ $('Parse & Compute SLA').first().json.fake_wait_years }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ed0a4c55-8a07-455d-ad0d-9e9269018dd6",
+      "name": "Merge Category ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1344,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "tickets",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "title",
+              "fieldValue": "={{ $json.title }}"
+            },
+            {
+              "fieldId": "description",
+              "fieldValue": "={{ $json.description }}"
+            },
+            {
+              "fieldId": "submitter_name",
+              "fieldValue": "={{ $json.submitter_name }}"
+            },
+            {
+              "fieldId": "submitter_email",
+              "fieldValue": "={{ $json.submitter_email }}"
+            },
+            {
+              "fieldId": "urgency",
+              "fieldValue": "={{ $json.urgency }}"
+            },
+            {
+              "fieldId": "category_id",
+              "fieldValue": "={{ $json.category_id }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "to_do"
+            },
+            {
+              "fieldId": "sla_deadline",
+              "fieldValue": "={{ $json.sla_deadline }}"
+            },
+            {
+              "fieldId": "fake_wait_years",
+              "fieldValue": "={{ $json.fake_wait_years }}"
+            }
+          ]
+        }
+      },
+      "id": "735c8d02-fef2-45ea-9813-a3ea33593698",
+      "name": "Supabase - Insert Ticket",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        -208
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, urgency: $json.urgency, sla_deadline: $json.sla_deadline } }}",
+        "options": {}
+      },
+      "id": "b5cf8da2-42dc-462a-ae6f-338ba2403e04",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        2000,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"from\": \"Kingdom's Complaints Office <correio@mail.eitikobata.com>\", \"to\": [\"{{ $json.submitter_email }}\"], \"subject\": \"Ticket Registered - Kingdom's Complaints Office\", \"html\": \"<p>Dear {{ $json.submitter_name }},</p><p>Your ticket <strong>{{ $json.title }}</strong> has been formally registered.</p><p>Classified as <strong>{{ $json.urgency }}</strong>, it will be reviewed in approximately <strong>{{ $json.fake_wait_years }} years</strong>.</p><p>&mdash; The Kingdom's Complaints Office</p>\"}",
+        "options": {}
+      },
+      "id": "b2e6c28a-ea6d-48c2-ae69-34863915ecdf",
+      "name": "Resend - Send Confirmation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1792,
+        -208
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Resend API Key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Payload": {
+      "main": [
+        [
+          {
+            "node": "Gemini - Classify Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini - Classify Ticket": {
+      "main": [
+        [
+          {
+            "node": "Parse & Compute SLA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Compute SLA": {
+      "main": [
+        [
+          {
+            "node": "Supabase - Get Category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase - Get Category": {
+      "main": [
+        [
+          {
+            "node": "Merge Category ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Category ID": {
+      "main": [
+        [
+          {
+            "node": "Supabase - Insert Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase - Insert Ticket": {
+      "main": [
+        [
+          {
+            "node": "Resend - Send Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resend - Send Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

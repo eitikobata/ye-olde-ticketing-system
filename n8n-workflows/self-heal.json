@@ -1,0 +1,67 @@
+{
+  "name": "Correio das Reclamacoes - Self Heal (Reset Seed Data)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 12
+            }
+          ]
+        }
+      },
+      "id": "8718bcd7-b5e7-4433-a01b-0057e7a16990",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        528,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Self-heal: reset tickets to the original seed set\ntruncate table tickets restart identity;\n\ninsert into categories (slug, label) values\n  ('monster_invasion', 'Monster Invasion'),\n  ('bureaucracy', 'Bureaucracy'),\n  ('broken_item', 'Broken Item'),\n  ('magic_malfunction', 'Magic Malfunction'),\n  ('other', 'Other')\non conflict (slug) do nothing;\n\ninsert into tickets (category_id, title, description, submitter_name, urgency, status, sla_deadline, fake_wait_years, created_at)\nvalues\n  ((select id from categories where slug = 'monster_invasion'), 'Goblin colony under my porch', 'They unionized. They now demand snacks every full moon.', 'Fenwick the Farmer', 'high', 'to_do', now() + interval '1 day', 200, now() - interval '2 days'),\n  ((select id from categories where slug = 'bureaucracy'), 'My tax scroll was eaten by a dragon', 'Literally. It ate the scroll, not just the taxes.', 'Bartholomew Quillfeather', 'low', 'to_do', now() + interval '7 days', 12, now() - interval '5 days'),\n  ((select id from categories where slug = 'broken_item'), 'Enchanted sword only casts \"Disappoint\"', 'Bought it as a +3 Flaming Sword. It just sighs loudly.', 'Sir Reginald Duckworth', 'medium', 'investigating', now() + interval '3 days', 75, now() - interval '1 day'),\n  ((select id from categories where slug = 'magic_malfunction'), 'Teleport circle only goes to the tavern', 'Every. Single. Time. My wife is starting to notice.', 'Alaric the Absent-Minded', 'medium', 'investigating', now() + interval '3 days', 75, now() - interval '3 hours'),\n  ((select id from categories where slug = 'monster_invasion'), 'A hydra moved into my well', 'Water tastes fine but it keeps asking for rent, seven times.', 'Old Widow Marsh', 'critical', 'to_do', now() + interval '4 hours', 350, now() - interval '1 hour'),\n  ((select id from categories where slug = 'other'), 'Neighbor casting weather spells at 3am', 'It only ever rains on my crops specifically.', 'Perpetua Ashgrove', 'low', 'done', now() + interval '7 days', 12, now() - interval '6 days'),\n  ((select id from categories where slug = 'bureaucracy'), 'Guild membership renewed me as a \"Level 1 Nobody\"', 'I am a Level 40 Archmage. This is slander.', 'Archmage Voss', 'medium', 'done', now() - interval '1 day', 75, now() - interval '10 days'),\n  ((select id from categories where slug = 'broken_item'), 'Cursed mirror only shows my ex', 'Asked for \"true reflection\". Regret this deeply.', 'Countess Wren Ashby', 'high', 'investigating', now() + interval '1 day', 200, now() - interval '12 hours'),\n  ((select id from categories where slug = 'monster_invasion'), 'A gelatinous cube ate my mailbox', 'It also ate the mail. And the mailman. He is fine, just annoyed.', 'Cornelius Pipwick', 'critical', 'to_do', now() + interval '4 hours', 350, now() - interval '30 minutes'),\n  ((select id from categories where slug = 'bureaucracy'), 'Requesting a refund on my prophecy', 'Was told I would \"rise to greatness.\" I run a cheese stall.', 'Mirabel Thorne', 'low', 'to_do', now() + interval '7 days', 12, now() - interval '4 days'),\n  ((select id from categories where slug = 'broken_item'), 'Bag of Holding is holding a grudge', 'It refuses to return my spoons specifically. Only the spoons.', 'Gideon Ashworth', 'medium', 'investigating', now() + interval '3 days', 75, now() - interval '9 hours'),\n  ((select id from categories where slug = 'magic_malfunction'), 'My familiar unionized with the neighbor''s familiar', 'They now demand collective bargaining on treats.', 'Hilda Nightshade', 'medium', 'investigating', now() + interval '3 days', 75, now() - interval '2 days'),\n  ((select id from categories where slug = 'monster_invasion'), 'Basilisk moved into the wine cellar', 'Excellent for aging wine. Terrible for fetching wine.', 'Duke Percival Ashbrook', 'high', 'to_do', now() + interval '1 day', 200, now() - interval '5 hours'),\n  ((select id from categories where slug = 'other'), 'Bard keeps writing unauthorized songs about me', 'The third verse is factually incorrect and deeply hurtful.', 'Baroness Odette Vance', 'low', 'done', now() + interval '7 days', 12, now() - interval '8 days'),\n  ((select id from categories where slug = 'bureaucracy'), 'My knighthood certificate has a typo', 'It says \"Sir Loin\" instead of \"Sir Colin\". Kitchen staff won''t stop.', 'Sir Colin Fairweather', 'low', 'done', now() - interval '2 days', 12, now() - interval '15 days'),\n  ((select id from categories where slug = 'broken_item'), 'Flying carpet only flies in reverse', 'Getting anywhere requires very awkward planning.', 'Yusuf al-Rihla', 'medium', 'investigating', now() + interval '3 days', 75, now() - interval '1 day'),\n  ((select id from categories where slug = 'magic_malfunction'), 'Invisibility potion made everything else visible instead', 'I am see-through. My furniture is now extremely visible.', 'Wendla Ashcombe', 'high', 'to_do', now() + interval '1 day', 200, now() - interval '6 hours'),\n  ((select id from categories where slug = 'monster_invasion'), 'A swarm of pixies redecorated my house', 'Everything is glitter now. I cannot get the glitter off.', 'Ambrose Fennimore', 'low', 'done', now() + interval '7 days', 12, now() - interval '3 days'),\n  ((select id from categories where slug = 'other'), 'Town crier is spreading my personal business', 'He announced my breakup at full volume. Twice.', 'Rosalind Kettering', 'medium', 'investigating', now() + interval '3 days', 75, now() - interval '14 hours'),\n  ((select id from categories where slug = 'bureaucracy'), 'Guild dues paid in chickens, not accepted', 'The notice never specified gold only. This feels discriminatory.', 'Farmer Tobias Reed', 'low', 'to_do', now() + interval '7 days', 12, now() - interval '6 days'),\n  ((select id from categories where slug = 'broken_item'), 'Crystal ball only shows yesterday''s weather', 'Mildly useful for arguments, useless for everything else.', 'Seraphina Moonwhisper', 'low', 'done', now() + interval '7 days', 12, now() - interval '2 days'),\n  ((select id from categories where slug = 'monster_invasion'), 'Owlbear insists it is a very large owl', 'Refuses correction. Has started nesting in the granary.', 'Warden Elric Stonebrook', 'critical', 'to_do', now() + interval '4 hours', 350, now() - interval '45 minutes'),\n  ((select id from categories where slug = 'magic_malfunction'), 'Summoning circle keeps ordering takeout instead of demons', 'Not complaining about the food. Very confused about the ritual.', 'Ignatius Blackwood', 'medium', 'investigating', now() + interval '3 days', 75, now() - interval '10 hours'),\n  ((select id from categories where slug = 'other'), 'Royal cat has been appointed to my old job', 'I have questions about the hiring process.', 'Beatrix Sallow', 'medium', 'done', now() - interval '3 days', 75, now() - interval '20 days'),\n  ((select id from categories where slug = 'bureaucracy'), 'Land deed says I own the moon', 'Delighted, honestly, but suspect a clerical error.', 'Percival Hobbs', 'low', 'done', now() + interval '7 days', 12, now() - interval '7 days');\n",
+        "options": {}
+      },
+      "id": "4bed5db8-f767-42a8-b4c6-b9527f1cfd10",
+      "name": "Postgres - Reset Seed Data",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        752,
+        208
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Supabase Postgres"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Reset Seed Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
