@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import type { Ticket, TicketStatus, TicketUrgency } from '@/lib/types';
 
 const COLUMNS: { status: TicketStatus; label: string }[] = [
@@ -33,31 +32,20 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function loadTickets() {
-      const { data, error } = await supabase
-        .from('tickets')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error(error);
-      } else {
+      try {
+        const response = await fetch(process.env.NEXT_PUBLIC_N8N_TICKETS_URL!);
+        const data = await response.json();
         setTickets(data as Ticket[]);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
 
     loadTickets();
-
-    const channel = supabase
-      .channel('tickets-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, () => {
-        loadTickets();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const interval = setInterval(loadTickets, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {

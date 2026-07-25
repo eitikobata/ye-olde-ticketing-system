@@ -5,8 +5,8 @@
 A fantasy-themed ticket management system built to demonstrate real-world **CX Ops / Support Ops / automation engineering** skills — AI-driven triage, SLA tracking, Scrumban board, and automated notifications — wrapped in the bureaucratic absurdity of a medieval complaints office that takes 350 years to resolve a critical incident.
 
 **Live demo:**
-- 📜 File a complaint: [tickets.eitikobata.com](https://tickets.eitikobata.com)
-- ⚖️ View the ledger (Scrumban board): [tickets.eitikobata.com/dashboard](https://tickets.eitikobata.com/dashboard)
+- 📜 File a complaint: [correio.eitikobata.com](https://correio.eitikobata.com)
+- ⚖️ View the ledger (Scrumban board): [correio.eitikobata.com/dashboard](https://correio.eitikobata.com/dashboard)
 
 ---
 
